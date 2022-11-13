@@ -1,0 +1,47 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-lambda-reader.ss" "lang")((modname 2022-fall-a7) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;(define-struct student(name age))
+
+;(define s1 (make-student "John" 21))
+
+;(build-list 10 (lambda (x) (* 2 x)))
+
+;;; A7
+
+(define-struct anode(name parent1 parent2))
+(define copyright-free-ancestors 
+  (make-anode"Liso"
+             (make-anode "Homern't"
+                         (make-anode "Abrahum"
+                                    (make-anode "Arville" empty empty)
+                                    empty)
+                         (make-anode "Mana" empty empty))
+             (make-anode "Merge"
+                        (make-anode "Cloncy"
+                                   empty
+                                   (make-anode "Bombi" empty empty))
+                        empty)
+  )
+)
+                
+(define (find-subtree AT name)
+    (cond[(empty? AT) empty]
+         [(string=? name (anode-name AT)) AT]
+         [else
+           (local [(define AT1 (find-subtree (anode-parent1 AT) name))
+                   (define AT2 (find-subtree (anode-parent2 AT) name))]
+;             AT2)]))
+             (cond[(empty? AT1) AT2]
+                  [else AT1]))]))
+
+(check-expect (find-subtree copyright-free-ancestors "Liso") copyright-free-ancestors)
+(check-expect (find-subtree copyright-free-ancestors "Homern't") (anode-parent1 copyright-free-ancestors))
+(check-expect (find-subtree copyright-free-ancestors "Merge") (anode-parent2 copyright-free-ancestors))
+(check-expect (find-subtree copyright-free-ancestors "Abrahum") (anode-parent1 (anode-parent1 copyright-free-ancestors)))
+(check-expect (find-subtree copyright-free-ancestors "Mana") (anode-parent2 (anode-parent1 copyright-free-ancestors)))
+(check-expect (find-subtree copyright-free-ancestors "Arville") (anode-parent1 (anode-parent1 (anode-parent1 copyright-free-ancestors))))
+(check-expect (find-subtree copyright-free-ancestors "Cloncy") (anode-parent1 (anode-parent2 copyright-free-ancestors)))
+(check-expect (find-subtree copyright-free-ancestors "Bombi") (anode-parent2 (anode-parent1 (anode-parent2 copyright-free-ancestors))))
+;(find-subtree copyright-free-ancestors "Cloncy")
+
