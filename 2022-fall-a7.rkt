@@ -158,3 +158,65 @@
 |#
 
 ;; Q2a
+(define sal-top-songs
+  (list (list 1 "Respect")
+        (list 3 "A Change is Gonna Come")
+        (list 7 "Strawberry Fields Forever")
+        (list 9 "Dreams")
+        (list 12 "Superstition")
+        (list 17 "Bohemian Rhapsody")
+        (list 19 "Imagine")
+        (list 21 "Strange Fruit")
+        (list 25 "Runaway")
+        (list 33 "Johnny B. Goode")))
+
+(define-struct node (key val left right))
+
+(define bstd-top-songs
+  (make-node 12 "Superstition"
+             (make-node 3 "A Change is Gonna Come"
+                        (make-node 1 "Respect" empty empty)
+                        (make-node 7 "Strawberry Fields Forever"
+                                   empty
+                                   (make-node 9 "Dreams" empty empty)))
+             (make-node 21 "Strange Fruit"
+                        (make-node 17 "Bohemian Rhapsody"
+                                   empty
+                                   (make-node 19 "Imagine" empty empty))
+                        (make-node 25 "Runaway"
+                                   empty
+                                   (make-node 33 "Johnny B. Goode" empty empty)))))
+
+
+;(define (sub-list/left lst median)
+;  (cond [(or (empty? lst) (>= (first lst) median)) empty]
+;        [else (cons (first lst) (sub-list/left (rest lst) median))]))
+;(define (sub-list/right lst median)
+;  (cond [(empty? lst) empty]
+;        [(<= (first lst) median) (sub-list/right (rest lst) median)]
+;        [else (cons (first lst) (sub-list/right (rest lst) median))]))
+;(define ss1 '(1 2 3 4 5 6 7 9 11 20))
+;(sub-list/left ss1 6)
+;(sub-list/right ss1 6)
+
+(define (build-bstd SAL)
+  (local [
+          (define (sub-list/left lst median)
+            (cond [(or (empty? lst) (>= (first (first lst)) median)) empty]
+                  [else (cons (first lst) (sub-list/left (rest lst) median))]))
+          (define (sub-list/right lst median)
+            (cond [(empty? lst) empty]
+                  [(<= (first (first lst)) median) (sub-list/right (rest lst) median)]
+                  [else (cons (first lst) (sub-list/right (rest lst) median))]))
+          ]
+    (cond [(empty? SAL) empty]
+          [else (local [(define median (list-ref SAL (floor (- (/ (length SAL) 2) 0.5))))
+                        (define left-list (sub-list/left SAL (first median)))
+                        (define right-list (sub-list/right SAL (first median)))]
+                  (make-node (first median) (second median) (build-bstd left-list) (build-bstd right-list)))])))
+
+
+(check-expect (build-bstd sal-top-songs) bstd-top-songs)
+
+  
+
