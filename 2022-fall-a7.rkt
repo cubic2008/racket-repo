@@ -97,15 +97,64 @@
 ;                      [(empty? parent1) (cons (anode-name AT) parent2)]
 ;                      [else (cons (anode-name AT) parent1)]))]))
 
+;; This is a working solution, but define both local "parent1" and "parent2" under the same level
 (define (get-f-descendants-path AT name)
-  (cond [(empty? AT) empty]
-        [(string=? name (anode-name AT)) (cons (anode-name AT) empty)]
-        [else (local [(define parent1 (get-f-descendants-path (anode-parent1 AT) name))
-                      (define parent2 (get-f-descendants-path (anode-parent2 AT) name))]
-                (cond [(cons? parent1) (empty? parent2)) empty]
-                      [(empty? parent1) (cons (anode-name AT) parent2)]
-                      [else (cons (anode-name AT) parent1)]))]))
+  (local [(define (reverse-list/acc lst finallist)
+            (cond [(empty? lst) finallist]
+                  [else (reverse-list/acc (rest lst) (cons (first lst) finallist))]))
+          (define (reverse-list lst)
+            (reverse-list/acc lst empty))
+          (define (get-f-descendants-path/1 AT name)
+            (cond [(empty? AT) empty]
+                  [(string=? name (anode-name AT)) (cons (anode-name AT) empty)]
+                  [else (local [(define parent1 (get-f-descendants-path/1 (anode-parent1 AT) name))
+                                (define parent2 (get-f-descendants-path/1 (anode-parent2 AT) name))]
+                          (cond [(cons? parent1) (cons (anode-name AT) parent1)]
+                                [(cons? parent2) (cons (anode-name AT) parent2)]
+                                [else empty]))]))]
+    (reverse-list (get-f-descendants-path/1 AT name))))
 
+;; This is a working solution, but define both local "parent1" and "parent2" under the least required level
+;(define (get-f-descendants-path AT name)
+;  (local [(define (reverse-list/acc lst finallist)
+;            (cond [(empty? lst) finallist]
+;                  [else (reverse-list/acc (rest lst) (cons (first lst) finallist))]))
+;          (define (reverse-list lst)
+;            (reverse-list/acc lst empty))
+;          (define (get-f-descendants-path/1 AT name)
+;            (cond [(empty? AT) empty]
+;                  [(string=? name (anode-name AT)) (cons (anode-name AT) empty)]
+;                  [else (local [(define parent1 (get-f-descendants-path/1 (anode-parent1 AT) name))]
+;                          (cond [(cons? parent1) (cons (anode-name AT) parent1)]
+;                                [else (local [(define parent2 (get-f-descendants-path/1 (anode-parent2 AT) name))]
+;                                        (cond [(cons? parent2) (cons (anode-name AT) parent2)]
+;                                              [else empty]))]))]))]
+;    (reverse-list (get-f-descendants-path/1 AT name))))
 
+(check-expect (get-f-descendants-path copyright-free-ancestors "Arville") '("Arville" "Abrahum" "Homern't" "Liso"))
+(check-expect (get-f-descendants-path copyright-free-ancestors "Liso") '("Liso"))
+(check-expect (get-f-descendants-path copyright-free-ancestors "Homern't") '("Homern't" "Liso"))
+(check-expect (get-f-descendants-path copyright-free-ancestors "Abrahum") '("Abrahum" "Homern't" "Liso"))
+(check-expect (get-f-descendants-path copyright-free-ancestors "Mana") '("Mana" "Homern't" "Liso"))
+(check-expect (get-f-descendants-path copyright-free-ancestors "Merge") '("Merge" "Liso"))
+(check-expect (get-f-descendants-path copyright-free-ancestors "Cloncy") '("Cloncy" "Merge" "Liso"))
+(check-expect (get-f-descendants-path copyright-free-ancestors "Bombi") '("Bombi" "Cloncy" "Merge" "Liso"))
+(check-expect (get-f-descendants-path copyright-free-ancestors "Unknown") '())
+(check-expect (get-f-descendants-path copyright-free-ancestors "Unknown") empty)
 
-(get-f-descendants-path copyright-free-ancestors "Arville")
+;(define ss1 (get-f-descendants-path copyright-free-ancestors "Arville"))
+
+#|
+;; Accumulateive reverse a lst
+(define (reverse-list/acc lst finallist)
+  (cond [(empty? lst) finallist]
+        [else (reverse-list/acc (rest lst) (cons (first lst) finallist))]))
+
+;; Wraper of reverse
+(define (reverse-list lst)
+  (reverse-list/acc lst empty))
+  
+(reverse-list ss1)
+|#
+
+;; Q2a
