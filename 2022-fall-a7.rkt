@@ -218,5 +218,65 @@
 
 (check-expect (build-bstd sal-top-songs) bstd-top-songs)
 
-  
+
+;; Q2b
+(define (range-query bstd k1 k2)
+  (cond [(empty? bstd) empty]
+        [(< (node-key bstd) k1) (range-query (node-right bstd) k1 k2)]
+        [(> (node-key bstd) k2) (range-query (node-left bstd) k1 k2)]
+;        [else (cons (range-query (node-left bstd) k1 k2) (cons (node-val bstd) (range-query (node-right bstd) k1 k2)))]))
+        [else (append (range-query (node-left bstd) k1 k2) (cons (node-val bstd) (range-query (node-right bstd) k1 k2)))]))
+
+;(range-query bstd-top-songs 3 18)
+(check-expect (range-query bstd-top-songs 3 18) '("A Change is Gonna Come" "Strawberry Fields Forever" "Dreams" "Superstition" "Bohemian Rhapsody"))
+
+;; Q3a
+(define-struct cnode (type id children))
+(define npc2-aggressive-window-entry
+  (make-cnode 'Sequence 1 (list "Walk to Window"
+                                (make-cnode 'Selector 2 (list "Open Window"
+                                                              (make-cnode 'Sequence 3 (list "Pick Window Lock"
+                                                                                            "Open Window"))
+                                                              "Smash Window"))
+                                "Climb through Window"
+                                "Turn Around"
+                                (make-cnode 'Selector 4 (list "Close Window"
+                                                              "Run Away")))))
+
+(define npc1-through-window
+  (make-cnode 'Sequence 1 (list "Walk to Window"
+                                "Open Window"
+                                "Climb through Window"
+                                "Turn Around"
+                                "Close Window")))
+
+(define (action-exists? BT action)
+  (cond [(empty? BT) false]
+        [else (local [(define (action-exists/lst? loBT action)
+                        (cond [(empty? loBT) false]
+                              [(cnode? (first loBT)) (or (action-exists? (first loBT) action) (action-exists/lst? (rest loBT) action))]
+                              [(string=? (first loBT) action) true]
+                              [else (action-exists/lst? (rest loBT) action)]))]
+                (action-exists/lst? (cnode-children BT) action))]))
+
+;(define (action-exists/lst? loBT action)
+;  (cond [(empty? loBT) false]
+;        [(symbol? (first loBT)) (action-exists? (first loBT) action)]
+;        [(string=? (first loBT) action) true]
+;        [else (action-exists/lst? (rest loBT) action)]))
+
+
+(check-expect (action-exists? npc1-through-window "Open Door") false)
+(check-expect (action-exists? npc1-through-window "Open Window") true)
+(check-expect (action-exists? npc2-aggressive-window-entry "Walk to Window") true)
+(check-expect (action-exists? npc2-aggressive-window-entry "Pick Window Lock") true)
+(check-expect (action-exists? npc2-aggressive-window-entry "Open Window") true)
+(check-expect (action-exists? npc2-aggressive-window-entry "Smash Window") true)
+(check-expect (action-exists? npc2-aggressive-window-entry "Climb through Window") true)
+(check-expect (action-exists? npc2-aggressive-window-entry "Turn Around") true)
+(check-expect (action-exists? npc2-aggressive-window-entry "Close Window") true)
+(check-expect (action-exists? npc2-aggressive-window-entry "Run Away") true)
+(check-expect (action-exists? npc2-aggressive-window-entry "Unknown") false)
+(check-expect (action-exists? npc2-aggressive-window-entry "") false)
+
 
