@@ -424,3 +424,26 @@ Around and (Close Window or Run Away))")
                     "Smash Window" "Open Window" "Pick Window Lock" "Open Window"
                     "Walk to Window"))
 
+;; Q4b
+
+(define (normalize lon)
+  (local [(define (max a b) (cond [(> a b) a] [else b]))
+          (define (min a b) (cond [(< a b) a] [else b]))
+          (define (calc-aggregate lst agg)
+            (cond [(empty? lst) agg]
+                  [else (calc-aggregate (rest lst) (list (max (first agg) (first lst)) (min (second agg) (first lst)) (add1 (third agg))))]))
+          (define agg-value (calc-aggregate lon (list (first lon) (first lon) 0)))
+          (define max-value (first agg-value))
+          (define min-value (second agg-value))
+          (define max-min-value (- max-value min-value))
+          (define (normalize/helper lst)
+            (cond [(empty? lst) empty]
+                  [else (cons (/ (- (first lst) min-value) max-min-value) (normalize/helper (rest lst)))]))
+          ]
+;    (list agg-value max-value min-value max-min-value)))
+;    (cond [(empty? lon) empty]
+;;          [else (cons (/ (- (first lon) min-value) max-min-value) (normalize (rest lon)))])))
+;          [else (cons max-min-value (normalize (rest lon)))])))
+    (normalize/helper lon)))
+
+(check-expect (normalize '(2 4 6)) '(0 0.5 1))
