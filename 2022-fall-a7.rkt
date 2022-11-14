@@ -230,7 +230,7 @@
 ;(range-query bstd-top-songs 3 18)
 (check-expect (range-query bstd-top-songs 3 18) '("A Change is Gonna Come" "Strawberry Fields Forever" "Dreams" "Superstition" "Bohemian Rhapsody"))
 
-;; Q3a
+;; Q3
 (define-struct cnode (type id children))
 (define npc2-aggressive-window-entry
   (make-cnode 'Sequence 1 (list "Walk to Window"
@@ -250,6 +250,7 @@
                                 "Turn Around"
                                 "Close Window")))
 
+;; Q3a
 (define (action-exists? BT action)
   (cond [(empty? BT) false]
         [else (local [(define (action-exists/lst? loBT action)
@@ -278,5 +279,7 @@
 (check-expect (action-exists? npc2-aggressive-window-entry "Run Away") true)
 (check-expect (action-exists? npc2-aggressive-window-entry "Unknown") false)
 (check-expect (action-exists? npc2-aggressive-window-entry "") false)
+
+;; Q3b
 
 
