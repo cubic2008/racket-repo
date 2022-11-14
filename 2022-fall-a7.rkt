@@ -282,4 +282,145 @@
 
 ;; Q3b
 
+(define (summarize-bt BT)
+  (local [(define (is-false? b s) (cond [(boolean=? b false) s] [else ""]))
+          (define (summarize-bt/lst loBT and-or isFirst)
+            (cond [(empty? loBT) ""]
+                  [(cnode? (first loBT)) (string-append (is-false? isFirst and-or) (summarize-bt (first loBT)) (summarize-bt/lst (rest loBT) and-or false))]
+                  [else (string-append (is-false? isFirst and-or) (first loBT) (summarize-bt/lst (rest loBT) and-or false))]))
+          ]
+    (cond [(empty? BT) ""]
+          [(symbol=? (cnode-type BT) 'Sequence) (string-append "(" (summarize-bt/lst (cnode-children BT) " and " true) ")")]
+          [else (string-append "(" (summarize-bt/lst (cnode-children BT) " or " true) ")")])))
+
+
+;(define (is-false? b s) (cond [(boolean=? b false) s] [else ""]))
+;
+;(define (summarize-bt/lst loBT and-or isFirst)
+;  (cond [(empty? loBT) ""]
+;        [(cnode? (first loBT)) (string-append (is-false? isFirst and-or) (summarize-bt/local (first loBT) false) (summarize-bt/lst (rest loBT) and-or false))]
+;        [else (string-append (is-false? isFirst and-or) (first loBT) (summarize-bt/lst (rest loBT) and-or false))]))
+
+(check-expect (summarize-bt npc2-aggressive-window-entry)
+"(Walk to Window and (Open Window or (Pick Window Lock and Open \
+Window) or Smash Window) and Climb through Window and Turn \
+Around and (Close Window or Run Away))")
+
+;; Q3c
+;(define (add-action a-cnode id action n)
+;  (local [(define (find-cnode CNode)
+;            (cond [(empty? CNode) empty] ;(make-cnode 'Sequence 1 (list action))]
+;                  [(= (cnode-id CNode) id) (make-cnode (cnode-type CNode) (cnode-id CNode) (cons "found" (cnode-children CNode)))]
+;                  [else (find-cnode/lst (cnode-children CNode))]))
+;          (define (find-cnode/lst lon)
+;            (cond [(empty? lon) empty] ;(make-cnode 'Sequence 1 (list action))]
+;                  [(cnode? (first lon))
+;                   (local [(define checked-node (find-cnode (first lon)))]
+;                     (cond [(empty? checked-node) (find-cnode/lst (rest lon))]
+;                           [else checked-node]
+;                   ))]
+;                  [else (find-cnode/lst (rest lon))]))
+;;          (define (insert-node new-node pos)
+;;            (cond [(empty? new-node) (make-cnode 'Sequence 1 (list action))]
+;;                  [(= pos 1) (make]
+;         ]
+;    (find-cnode a-cnode)))
+
+;(define (add-action a-cnode id action n)
+;  (local [(define (find-cnode CNode)
+;            (cond [(empty? CNode) empty] ;(make-cnode 'Sequence 1 (list action))]
+;                  [(= (cnode-id CNode) id) (make-cnode (cnode-type CNode) (cnode-id CNode) (insert-to-list (cnode-children CNode) n))]
+;                  [else (make-cnode (cnode-type CNode) (cnode-id CNode) (find-cnode/lst (cnode-children CNode)))]))
+;          (define (insert-to-list los k)
+;            (cond [(empty? los) (cons action empty)]
+;                  [(= k 1) (cons action (rest los))]
+;                  [else (cons (first los) (insert-to-list (rest los) (- k 1)))]))
+;          (define (find-cnode/lst lon)
+;            (cond [(empty? lon) empty] ;(make-cnode 'Sequence 1 (list action))]
+;                  [(cnode? (first lon)) (cons (find-cnode (first lon)) (find-cnode/lst (rest lon)))]
+;                  [else (cons (first lon) (find-cnode/lst (rest lon)))]
+;                  ))
+;         ]
+;    (find-cnode a-cnode)))
+
+(define (add-action a-cnode id action n)
+  (local [(define (insert-to-list los k)
+            (cond [(empty? los) (cons action empty)]
+                  [(= k 1) (cons action (rest los))]
+                  [else (cons (first los) (insert-to-list (rest los) (- k 1)))]))
+          (define (find-cnode/lst lon)
+            (cond [(empty? lon) empty]
+                  [(cnode? (first lon)) (cons (add-action (first lon) id action n) (find-cnode/lst (rest lon)))]
+                  [else (cons (first lon) (find-cnode/lst (rest lon)))]
+                  ))
+         ]
+    (cond [(empty? a-cnode) empty]
+          [(= (cnode-id a-cnode) id) (make-cnode (cnode-type a-cnode) (cnode-id a-cnode) (insert-to-list (cnode-children a-cnode) n))]
+          [else (make-cnode (cnode-type a-cnode) (cnode-id a-cnode) (find-cnode/lst (cnode-children a-cnode)))])
+))
+
+
+(check-expect (add-action npc1-through-window 1 "Look through Window" 2)
+              (make-cnode 'Sequence 1 (list "Walk to Window" "Look through Window" "Climb through Window" "Turn Around" "Close Window")))
+(check-expect (add-action npc2-aggressive-window-entry 1 "Stop to Catch Breath" 3)
+              (make-cnode
+               'Sequence
+               1
+               (list
+                "Walk to Window"
+                (make-cnode 'Selector 2 (list "Open Window" (make-cnode 'Sequence 3 (list "Pick Window Lock" "Open Window")) "Smash Window"))
+                "Stop to Catch Breath"
+                "Turn Around"
+                (make-cnode 'Selector 4 (list "Close Window" "Run Away")))))
+(check-expect (add-action npc2-aggressive-window-entry 2 "Stop to Catch Breath" 3)
+              (make-cnode 'Sequence 1
+                          (list
+                           "Walk to Window"
+                           (make-cnode 'Selector 2
+                                       (list "Open Window" (make-cnode 'Sequence 3 (list "Pick Window Lock" "Open Window")) "Stop to Catch Breath"))
+                           "Climb through Window"
+                           "Turn Around"
+                           (make-cnode 'Selector 4 (list "Close Window" "Run Away")))))
+(check-expect (add-action npc2-aggressive-window-entry 3 "Stop to Catch Breath" 3)
+              (make-cnode
+               'Sequence
+               1
+               (list
+                "Walk to Window"
+                (make-cnode
+                 'Selector
+                 2
+                 (list "Open Window" (make-cnode 'Sequence 3 (list "Pick Window Lock" "Open Window" "Stop to Catch Breath")) "Smash Window"))
+                "Climb through Window"
+                "Turn Around"
+                (make-cnode 'Selector 4 (list "Close Window" "Run Away")))))
+(check-expect (add-action npc2-aggressive-window-entry 4 "Stop to Catch Breath" 3)
+              (make-cnode
+               'Sequence
+               1
+               (list
+                "Walk to Window"
+                (make-cnode 'Selector 2 (list "Open Window" (make-cnode 'Sequence 3 (list "Pick Window Lock" "Open Window")) "Smash Window"))
+                "Climb through Window"
+                "Turn Around"
+                (make-cnode 'Selector 4 (list "Close Window" "Run Away" "Stop to Catch Breath")))))
+(check-expect (add-action npc2-aggressive-window-entry 10 "Stop to Catch Breath" 3) npc2-aggressive-window-entry)
+
+;; Q3d
+(define (rewind BT)
+  (cond [(empty? BT) empty]
+        [else (local [(define (rewind/lst lon)
+                        (cond [(empty? lon) empty]
+                              [(cnode? (first lon)) (append (rewind/lst (rest lon)) (rewind (first lon)))]
+                              [else (append (rewind/lst (rest lon)) (list (first lon)))]))]
+         (rewind/lst (cnode-children BT)))]))
+
+
+
+(check-expect (rewind npc1-through-window)
+              (list "Close Window" "Turn Around" "Climb through Window" "Open Window" "Walk to Window"))
+(check-expect (rewind npc2-aggressive-window-entry)
+              (list "Run Away" "Close Window" "Turn Around" "Climb through Window"
+                    "Smash Window" "Open Window" "Pick Window Lock" "Open Window"
+                    "Walk to Window"))
 
