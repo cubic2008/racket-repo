@@ -251,14 +251,14 @@
                                 "Close Window")))
 
 ;; Q3a
-(define (action-exists? BT action)
-  (cond [(empty? BT) false]
-        [else (local [(define (action-exists/lst? loBT action)
-                        (cond [(empty? loBT) false]
-                              [(cnode? (first loBT)) (or (action-exists? (first loBT) action) (action-exists/lst? (rest loBT) action))]
-                              [(string=? (first loBT) action) true]
-                              [else (action-exists/lst? (rest loBT) action)]))]
-                (action-exists/lst? (cnode-children BT) action))]))
+;(define (action-exists? BT action)
+;  (cond [(empty? BT) false]
+;        [else (local [(define (action-exists/lst? loBT action)
+;                        (cond [(empty? loBT) false]
+;                              [(cnode? (first loBT)) (or (action-exists? (first loBT) action) (action-exists/lst? (rest loBT) action))]
+;                              [(string=? (first loBT) action) true]
+;                              [else (action-exists/lst? (rest loBT) action)]))]
+;                (action-exists/lst? (cnode-children BT) action))]))
 
 ;(define (action-exists/lst? loBT action)
 ;  (cond [(empty? loBT) false]
@@ -266,6 +266,16 @@
 ;        [(string=? (first loBT) action) true]
 ;        [else (action-exists/lst? (rest loBT) action)]))
 
+(define (action-exists? BT action)
+  (cond [(empty? BT) false]
+        [(cnode? BT) (local [(define (action-exists/lst? loBT action)
+                        (cond [(empty? loBT) false]
+                              ;[(cnode? (first loBT)) (or (action-exists? (first loBT) action) (action-exists/lst? (rest loBT) action))]
+                              ;[(string=? (first loBT) action) true]
+                              ;[else (action-exists/lst? (rest loBT) action)]))]
+                              [else (or (action-exists? (first loBT) action) (action-exists/lst? (rest loBT) action))]))]
+                (action-exists/lst? (cnode-children BT) action))]
+        [else (string=? BT action)]))
 
 (check-expect (action-exists? npc1-through-window "Open Door") false)
 (check-expect (action-exists? npc1-through-window "Open Window") true)
