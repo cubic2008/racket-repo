@@ -243,4 +243,101 @@
                                                          '())
                                              (make-hnode 30 '() '()))))
 
-(heap-print example-heap number->string)
+;(heap-print example-heap number->string)
+
+(define (heap-add key heap x<=?)
+  (local [(define (min-key k1 k2)
+            (cond [(x<=? k1 k2) k1] [else k2]))
+          (define (max-key k1 k2)
+            (cond [(x<=? k1 k2) k2] [else k1]))]
+    (cond [(empty? heap) (make-hnode key empty empty)]
+          [else (make-hnode (min-key (hnode-key heap) key)
+                            (heap-add (max-key (hnode-key heap) key) (hnode-right heap) x<=?)
+                            (hnode-left heap))])))
+
+;(heap-print (heap-add 80 example-heap <) number->string)
+;(heap-print (heap-add 0 example-heap <) number->string)
+(define h1 (heap-add 10 empty <))
+(heap-print h1 number->string)
+
+(define h2 (heap-add 20 h1 <))
+(heap-print h2 number->string)
+
+(define h3 (heap-add 30 h2 <))
+(heap-print h3 number->string)
+
+(define h4 (heap-add 40 h3 <))
+(heap-print h4 number->string)
+
+(define h5 (heap-add 50 h4 <))
+(heap-print h5 number->string)
+
+(define h6 (heap-add 60 h5 <))
+(heap-print h6 number->string)
+
+(define h7 (heap-add 5 h6 <))
+(heap-print h7 number->string)
+
+(define h8 (heap-add 15 h7 <))
+(heap-print h8 number->string)
+
+(define h9 (heap-add 1 h8 <))
+(heap-print h9 number->string)
+
+(define h10 (heap-add 70 h9 <))
+(heap-print h10 number->string)
+
+
+;;Q4b
+(define (heap-remove-min heap x<=?)
+  (cond [(empty? heap) empty]
+        [(empty? (hnode-left heap)) (hnode-right heap)]
+        [(empty? (hnode-right heap)) (hnode-left heap)]
+        [(x<=? (hnode-key (hnode-left heap)) (hnode-key (hnode-right heap)))
+         (make-hnode (hnode-key (hnode-left heap)) (heap-remove-min (hnode-left heap) x<=?) (hnode-right heap))]
+        [else (make-hnode (hnode-key (hnode-right heap)) (hnode-left heap) (heap-remove-min (hnode-right heap) x<=?))]))
+
+(define hh1 h10)
+
+(define hh2 (heap-remove-min hh1 <=))
+(heap-print hh2 number->string)
+
+(define hh3 (heap-remove-min hh2 <=))
+(heap-print hh3 number->string)
+
+(define hh4 (heap-remove-min hh3 <=))
+(heap-print hh4 number->string)
+
+(define hh5 (heap-remove-min hh4 <=))
+(heap-print hh5 number->string)
+
+(define hh6 (heap-remove-min hh5 <=))
+(heap-print hh6 number->string)
+
+(define hh7 (heap-remove-min hh6 <=))
+(heap-print hh7 number->string)
+
+(define hh8 (heap-remove-min hh7 <=))
+(heap-print hh8 number->string)
+
+(define hh9 (heap-remove-min hh8 <=))
+(heap-print hh9 number->string)
+
+(define hh10 (heap-remove-min hh9 <=))
+(heap-print hh10 number->string)
+
+(define hh11 (heap-remove-min hh10 <=))
+(heap-print hh11 number->string)
+
+;; Q4c
+
+
+
+
+
+
+
+
+
+
+    
