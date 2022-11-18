@@ -330,9 +330,25 @@
 (heap-print hh11 number->string)
 
 ;; Q4c
+(define (list->heap lox x<=?)
+  (cond [(empty? lox) empty]
+        [else (heap-add (first lox) (list->heap (rest lox) x<=?) x<=?)]))
 
 
+(heap-print (list->heap '(70 1 15 5 60 50 40 30 20 10) <=) number->string)
 
+;; Q4d
+(define (heap->list heap x<=?)
+  (cond [(empty? heap) empty]
+        [else (cons (hnode-key heap) (heap->list (heap-remove-min heap x<=?) x<=?))]))
+
+(heap->list hh1 <=)
+
+;; Q4e
+(define (heap-sort lox x<=?)
+  (heap->list (list->heap lox x<=?) x<=?))
+
+(heap-sort '(70 1 15 5 60 50 40 30 20 10) <=)
 
 
 
