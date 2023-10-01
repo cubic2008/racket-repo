@@ -5,7 +5,7 @@
 
 (define (host-play-date? home friend1 friend2 friend3 max-difference)
   (and (or (and (even? home) (even? friend1) (even? friend2) (even? friend3))
-           (and (odd? home) (even? friend1) (even? friend2) (even? friend3)))
+           (and (odd? home) (odd? friend1) (odd? friend2) (odd? friend3)))
        (<= (abs (- home friend1)) max-difference)
        (<= (abs (- home friend2)) max-difference)
        (<= (abs (- home friend3)) max-difference)))
